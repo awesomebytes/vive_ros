@@ -54,23 +54,66 @@ bool VRInterface::Init()
   // Loading the SteamVR Runtime
   vr::EVRInitError eError = vr::VRInitError_None;
   
-  pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Scene );
+  if (vr::VR_IsHmdPresent())
+  {
+  info_("Hmd IS present");
+  }
+  else
+  {
+  info_("Hmd IS NOT present");
+  }
+  
+  if (vr::VR_IsRuntimeInstalled())
+  {
+  info_("Runtime IS installed");
+  }
+  else
+  {
+  info_("Runtime IS NOT installed");
+  }
+
+
+
+  //https://github.com/ValveSoftware/openvr/wiki/API-Documentation
+  //pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Scene );
+
+  // VRApplication_Background - The application will not start SteamVR.
+  // If it is not already running the call with VR_Init will fail with VRInitError_Init_NoServerForBackgroundApp.
+  pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Background );
 
   if (eError != vr::VRInitError_None)
   {
     pHMD_ = NULL;
     error_("VR_Init Failed.");
+    error_("With error: ");
+    error_("" + std::to_string(eError));
+    error_(vr::VR_GetVRInitErrorAsSymbol(eError));
+    // Error 307 EVRInitError_VRInitError_IPC_CompositorInvalidConnectResponse
     return false;
   }
 
+
+
   info_("VR_Init Success.");
-  //~ strDriver_ = GetTrackedDeviceString( pHMD_, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String );
-  //~ strDisplay_ = GetTrackedDeviceString( pHMD_, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String );
-  //~ info_("Device: " + strDriver_ + ", " + strDisplay_);
+
+  info_("Device: " + GetTrackedDeviceString( pHMD_, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String ) + ", display: " + GetTrackedDeviceString( pHMD_, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String ));
   
+  if(pHMD_->IsDisplayOnDesktop()){
+    info_("Display is part of the desktop (extended).");
+    // if (pHMD_->SetDisplayVisibility(false)){
+    //   info_("Direct mode set!");
+    // }
+    // else{
+    //   info_("Setting direct mode failed, we keep on extended.");
+    // }
+  }
+  else{
+    info_("Display is hidden (direct mode)");
+  }
+
   //~ pHMD_->ResetSeatedZeroPose();
   
-  UpdateCalibration();
+  //UpdateCalibration();
 
   return true;
 }
@@ -91,13 +134,16 @@ void VRInterface::Update()
   {
     pHMD_->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseRawAndUncalibrated, 0, device_poses_, max_devices_);
                                     
-    //~ for (vr::TrackedDeviceIndex_t device_index = vr::k_unTrackedDeviceIndex_Hmd; device_index < max_devices_; ++device_index)
-    //~ {
-      //~ if (device_poses_[device_index].bDeviceIsConnected && device_poses_[device_index].bPoseIsValid)
-      //~ {
-        //~ info_("device[" + std::to_string(device_index) + "]: " + std::to_string(pHMD_->GetTrackedDeviceClass(device_index)) + " " + std::to_string(device_poses_[device_index].eTrackingResult));
-      //~ }
-    //~ }
+    for (vr::TrackedDeviceIndex_t device_index = vr::k_unTrackedDeviceIndex_Hmd; device_index < max_devices_; ++device_index)
+    {
+      if (device_poses_[device_index].bDeviceIsConnected && device_poses_[device_index].bPoseIsValid)
+      {
+          info_("device[" + std::to_string(device_index) + "]: " + std::to_string(pHMD_->GetTrackedDeviceClass(device_index)) + " " + std::to_string(device_poses_[device_index].eTrackingResult));
+      }
+    }
+  }
+  else{
+    error_("pHMD_ is false or null");
   }
 }
 

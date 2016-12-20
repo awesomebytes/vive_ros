@@ -141,8 +141,12 @@ void VIVEnode::Run()
     {
       int dev_type = vr_.GetDeviceMatrix(i, tf_matrix);
 
+      if (dev_type == 18856822080) continue;
+
       // No device
       if (dev_type == 0) continue;
+      ROS_INFO_STREAM('dev_type: ' << dev_type);
+
 
       tf::Transform tf;
       tf.setOrigin(tf::Vector3(tf_matrix[0][3], tf_matrix[1][3], tf_matrix[2][3]));

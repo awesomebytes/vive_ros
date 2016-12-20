@@ -33,3 +33,6 @@ Files should be located on: `~/.local/share/Steam/steamapps/common/SteamVR`
 ## Configure display.
 
 Go to your OS display options to enable HMD's display.
+
+## Install vulkan
+    sudo apt-get install libvulkan-dev
