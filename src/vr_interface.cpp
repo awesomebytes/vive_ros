@@ -15,7 +15,7 @@ inline void defaultErrorMsgCallback(const std::string &msg) {
     std::cerr << "VIVE Error: " << msg << std::endl;
 }
 
-std::map<vr::ChaperoneCalibrationState, std::string> mapChaperonStrings
+/*std::map<vr::ChaperoneCalibrationState, std::string> mapChaperonStrings
 { 
   { vr::ChaperoneCalibrationState_OK, "Chaperone is fully calibrated and working correctly" }, 
   { vr::ChaperoneCalibrationState_Warning, "Warning" },
@@ -27,7 +27,7 @@ std::map<vr::ChaperoneCalibrationState, std::string> mapChaperonStrings
   { vr::ChaperoneCalibrationState_Error_BaseStationConflict, "Tracking center is calibrated, but base stations disagree on the tracking space" },
   { vr::ChaperoneCalibrationState_Error_PlayAreaInvalid, "Play Area hasn't been calibrated for the current tracking center" },
   { vr::ChaperoneCalibrationState_Error_CollisionBoundsInvalid, "Collision Bounds haven't been calibrated for the current tracking center" }
-};
+};*/
 
 VRInterface::VRInterface()
   : error_(defaultErrorMsgCallback)
@@ -75,12 +75,7 @@ bool VRInterface::Init()
 
 
   //https://github.com/ValveSoftware/openvr/wiki/API-Documentation
-  //pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Scene );
-
-  // VRApplication_Background - The application will not start SteamVR.
-  // If it is not already running the call with VR_Init will fail with VRInitError_Init_NoServerForBackgroundApp.
-  pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Background );
-
+  pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Scene );
   if (eError != vr::VRInitError_None)
   {
     pHMD_ = NULL;
@@ -89,10 +84,27 @@ bool VRInterface::Init()
     error_("" + std::to_string(eError));
     error_(vr::VR_GetVRInitErrorAsSymbol(eError));
     // Error 307 EVRInitError_VRInitError_IPC_CompositorInvalidConnectResponse
-    return false;
+    //return false;
   }
+  else {
 
+    info_("Trying with VRApplication_Background instead of VRApplication_Scene.");
+    // VRApplication_Background - The application will not start SteamVR.
+    // If it is not already running the call with VR_Init will fail with VRInitError_Init_NoServerForBackgroundApp.
+    pHMD_ = vr::VR_Init( &eError, vr::VRApplication_Background );
 
+    if (eError != vr::VRInitError_None)
+    {
+      pHMD_ = NULL;
+      error_("VR_Init Failed.");
+      error_("With error: ");
+      error_("" + std::to_string(eError));
+      error_(vr::VR_GetVRInitErrorAsSymbol(eError));
+      // Error 307 EVRInitError_VRInitError_IPC_CompositorInvalidConnectResponse
+      return false;
+    }
+
+  }
 
   info_("VR_Init Success.");
 
@@ -204,7 +216,7 @@ void VRInterface::UpdateCalibration()
     error_("Could not find chaperone");
   }
   cal_state_ = pChaperone_->GetCalibrationState();
-  info_("Calibration state: " + mapChaperonStrings[cal_state_]);
+  //info_("Calibration state: " + mapChaperonStrings[cal_state_]);
   if (!pChaperone_->GetPlayAreaSize(&play_area_[0], &play_area_[1]))
     info_("Play area: " + std::to_string(play_area_[0]) + " x " + std::to_string(play_area_[1]));
   else
