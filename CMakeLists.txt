@@ -43,3 +43,8 @@ add_executable(vive_node
 )
 target_link_libraries(vive_node ${catkin_LIBRARIES} ${OPENVR_LIB})
 
+add_executable(minimal_test 
+  src/minimal.cpp
+)
+target_link_libraries(minimal_test ${OPENVR_LIB})
+
